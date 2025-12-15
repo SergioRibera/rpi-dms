@@ -1,4 +1,3 @@
-{ ... }:
 {
   programs = {
     dconf.enable = true;
@@ -7,6 +6,7 @@
       flake = "/etc/nixos";
     };
     ssh = {
+      startAgent = true;
       extraConfig = ''
         AddKeysToAgent yes
       '';

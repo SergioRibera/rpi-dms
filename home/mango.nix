@@ -29,9 +29,7 @@ let
       0;
 in
 {
-  imports = [
-    inputs.mango.nixosModules.mango
-  ];
+  programs.mango.enable = true;
 
   home-manager.users.${user.username} = lib.mkIf (user.enableHM) (
     { ... }:
@@ -41,7 +39,7 @@ in
       ];
 
       wayland.windowManager.mango = {
-        enable = gui.enable;
+        enable = true;
         autostart_sh = ''
           dbus-update-activation-environment --all
           dms run

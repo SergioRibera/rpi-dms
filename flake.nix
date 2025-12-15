@@ -4,7 +4,6 @@
     {
       nixpkgs,
       nixos-generators,
-      nixos-hardware,
       ...
     }@inputs:
     let
@@ -31,18 +30,25 @@
           inherit inputs;
           pkgs = pkgsFor system;
         };
-        modules = [
-          {
-            networking.hostName = hostname;
-            user.username = username;
-            nixpkgs.hostPlatform = system;
-          }
-          ./home
-          ./hosts/common
-          inputs.home-manager.nixosModules.home-manager
-          inputs.dms.nixosModules.greeter
-        ]
-        ++ extraModules;
+        modules =
+          with inputs.nixos-raspberrypi.nixosModules;
+          [
+            {
+              networking.hostName = hostname;
+              user.username = username;
+              nixpkgs.hostPlatform = system;
+            }
+            ./home
+            ./hosts/common
+            inputs.mango.nixosModules.mango
+            inputs.home-manager.nixosModules.home-manager
+
+            inputs.nixos-raspberrypi.lib.inject-overlays
+            trusted-nix-caches
+            usb-gadget-ethernet # Configures USB Gadget/Ethernet - Ethernet emulation over USB
+            inputs.nixos-raspberrypi.lib.inject-overlays-global
+          ]
+          ++ extraModules;
       };
 
       raspberryPiConfigs = [
@@ -51,10 +57,12 @@
           format = "sd-aarch64";
           hostname = "raspberrypi-aarch64";
           username = "s4rch";
-          extraModules = [
+          extraModules = with inputs.nixos-raspberrypi.nixosModules; [
             ./hosts/aarch64.nix
-            nixos-hardware.nixosModules.raspberry-pi-4
-            # "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+            raspberry-pi-4.base
+            raspberry-pi-4.display-vc4 # "regular" display connected
+            raspberry-pi-4.display-vc4
+            "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
           ];
         }
         {
@@ -62,10 +70,10 @@
           format = "sd-armv7l";
           hostname = "raspberrypi-armv7l";
           username = "s4rch";
-          extraModules = [
+          extraModules = with inputs.nixos-raspberrypi.nixosModules; [
             ./hosts/armv7l.nix
-            nixos-hardware.nixosModules.raspberry-pi-4
-            # "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-armv7l.nix"
+            raspberry-pi-3.base
+            "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-armv7l.nix"
           ];
         }
       ];
@@ -170,7 +178,7 @@
       url = "github:nix-community/nixos-generators";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
+    nixos-raspberrypi.url = "github:nvmd/nixos-raspberrypi/main";
   };
 
   nixConfig = {
@@ -178,10 +186,12 @@
     extra-substituters = [
       "https://nix-community.cachix.org"
       "https://arm.cachix.org"
+      "https://nixos-raspberrypi.cachix.org"
     ];
     extra-trusted-public-keys = [
       "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCwyvRCYg3Fs="
       "arm.cachix.org-1:5BthnDvNABZQ8Q8QuBdWjT8v3AT4DSBB6cO9CTU7Hys="
+      "nixos-raspberrypi.cachix.org-1:4iMO9LXa8BqhU+Rpg6LQKiGa2lsNh/j2oiYLNOQ5sPI="
     ];
     extra-platforms = [
       "aarch64-linux"

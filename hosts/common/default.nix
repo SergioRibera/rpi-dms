@@ -5,6 +5,7 @@ in
 {
   imports = [
     ./boot.nix
+    ./greeter.nix
     ./hardware.nix
     ./options.nix
     ./packages.nix
