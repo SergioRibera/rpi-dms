@@ -20,7 +20,6 @@ in
     ELECTRON_OZONE_PLATFORM_HINT = "wayland";
     QT_QPA_PLATFORM = "wayland";
     QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
-    EDITOR = "neovide --fork";
   };
 
   nixpkgs.config.allowUnfree = true;
@@ -61,11 +60,14 @@ in
   console.useXkbConfig = true;
 
   networking = {
-    networkmanager.enable = true;
+    # wireless.enable = true;
+    networkmanager = {
+      enable = true;
+      wifi.powersave = false;
+    };
     interfaces.eth0.useDHCP = true;
     interfaces.wlan0.useDHCP = true;
   };
-
 
   environment.shellAliases = config.shell.aliases;
   services.getty.autologinUser = username;

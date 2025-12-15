@@ -6,7 +6,7 @@
   ];
 
   boot = {
-    kernelPackages = pkgs.linuxPackages_rpi4;
+    kernelPackages = pkgs.linuxPackages_6_12;
     kernelParams = [
       "cma=64M"
       "console=ttyAMA0,115200"
@@ -18,6 +18,6 @@
     ];
   };
 
-  hardware.raspberry-pi."4".apply-overlays-dtmerge.enable = true;
-  hardware.raspberry-pi."4".fkms-3d.enable = true;
+  # hardware.raspberry-pi."4".apply-overlays-dtmerge.enable = true;
+  # hardware.raspberry-pi."4".fkms-3d.enable = true;
 }

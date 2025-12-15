@@ -40,48 +40,22 @@ with pkgs;
       ))
       neovide
 
-      wrkflw
       dive
       just
 
       # Js
       pnpm
       nodejs
+      python314
 
       # Cargo extras
-      cargo-make
       cargo-expand
-      cargo-generate
-      cargo-dist
-      cargo-release
-      cargo-machete
-
-      brightnessctl
-
-      # Wayland
-      grim
-      slurp
-      libnotify
-      wl-clipboard
-      hyprpicker
-
-      # Caelestia Shell
-      hyprland
-      caelestia-shell
-      caelestia-cli
 
       # GUI
-      easyeffects
-      pwvucontrol
-      playerctl
-
-      # Discord
-      (discord.overrideAttrs (
-        final: prev: {
-          withOpenASAR = true;
-          commandLineArgs = "--use-gl=desktop";
-        }
-      ))
+      nautilus
+      # easyeffects
+      # pwvucontrol
+      # playerctl
     ];
   };
 }
