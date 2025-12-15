@@ -1,18 +1,11 @@
 { pkgs, ... }:
-let
-  kernelBundle = pkgs.linuxAndFirmware.v6_12_61;
-in
 {
   imports = [
     ./common/raspberrypi.nix
     ./common-options.nix
   ];
 
-  boot.kernelPackages = pkgs.linuxPackages_rpi5;
-  boot.loader.raspberryPi = {
-    firmwarePackage = kernelBundle.raspberrypifw;
-    bootloader = "kernel";
-  };
+  boot.kernelPackages = pkgs.linuxPackages_rpi4;
   # hardware.raspberry-pi."4".fkms-3d.enable = true;
 
   # hardware.deviceTree = {
@@ -53,7 +46,6 @@ in
   #    dtparam=usb=on
   #  '';
 
-  # Módulos del kernel necesarios
   # boot.initrd.availableKernelModules = [
   #   "usbhid"
   #   "usb_storage"
@@ -65,7 +57,6 @@ in
   #   "hid_logitech"
   # ];
 
-  # Parámetros del kernel
   # boot.kernelParams = [
   #   # Configuración de memoria
   #   "cma=64M"

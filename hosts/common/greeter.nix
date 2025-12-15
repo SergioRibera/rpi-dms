@@ -16,7 +16,7 @@ let
   greeterScript = pkgs.writeShellScriptBin "dms-greeter" ''
     export PATH=$PATH:${
       lib.makeBinPath [
-        pkgs.quickshell
+        inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.default
         compositorPackage
       ]
     }

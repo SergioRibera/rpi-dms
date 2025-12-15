@@ -2,8 +2,9 @@
   description = "MangoWM implement DankMaterialShell for Raspberry Pi 3/4/5";
   outputs =
     {
+      self,
       nixpkgs,
-      nixos-generators,
+      nixos-raspberrypi,
       ...
     }@inputs:
     let
@@ -13,26 +14,59 @@
       ];
       forEachBuildSystem = nixpkgs.lib.genAttrs buildSystems;
 
+      lib = nixpkgs.lib;
+      baseLib = nixpkgs.lib;
+      origMkRemovedOptionModule = baseLib.mkRemovedOptionModule;
+      patchedLib = lib.extend (
+        final: prev: {
+          mkRemovedOptionModule =
+            optionName: replacementInstructions:
+            let
+              key = "removedOptionModule#" + final.concatStringsSep "_" optionName;
+            in
+            { options, ... }:
+            (origMkRemovedOptionModule optionName replacementInstructions { inherit options; })
+            // {
+              inherit key;
+            };
+        }
+      );
+
       pkgsFor =
         system:
         (import nixpkgs {
           inherit system;
           config.allowUnfree = true;
-          overlays = [
+          overlays = with nixos-raspberrypi.overlays; [
             inputs.rust.overlays.default
             inputs.mac-style-plymouth.overlays.default
+
+            bootloader
+            vendor-pkgs
+            # kernel-and-firmware
+            vendor-firmware
+            vendor-kernel
+
+            (final: prev: {
+              kbd = prev.kbd // {
+                gzip = prev.gzip;
+              };
+            })
           ];
         });
 
       nixosBaseArgs = username: system: hostname: extraModules: {
         inherit system;
+        lib = patchedLib;
         specialArgs = {
-          inherit inputs;
+          inherit self inputs nixos-raspberrypi;
           pkgs = pkgsFor system;
         };
         modules =
-          with inputs.nixos-raspberrypi.nixosModules;
+          with nixos-raspberrypi.nixosModules;
           [
+            nixos-raspberrypi.lib.inject-overlays-global
+            nixos-raspberrypi.lib.inject-overlays
             {
               networking.hostName = hostname;
               user.username = username;
@@ -43,10 +77,11 @@
             inputs.mango.nixosModules.mango
             inputs.home-manager.nixosModules.home-manager
 
-            inputs.nixos-raspberrypi.lib.inject-overlays
             trusted-nix-caches
+            nixpkgs-rpi
             usb-gadget-ethernet # Configures USB Gadget/Ethernet - Ethernet emulation over USB
-            inputs.nixos-raspberrypi.lib.inject-overlays-global
+
+            sd-image
           ]
           ++ extraModules;
       };
@@ -57,12 +92,10 @@
           format = "sd-aarch64";
           hostname = "raspberrypi-aarch64";
           username = "s4rch";
-          extraModules = with inputs.nixos-raspberrypi.nixosModules; [
+          extraModules = with nixos-raspberrypi.nixosModules; [
             ./hosts/aarch64.nix
             raspberry-pi-4.base
             raspberry-pi-4.display-vc4 # "regular" display connected
-            raspberry-pi-4.display-vc4
-            "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
           ];
         }
         {
@@ -70,10 +103,9 @@
           format = "sd-armv7l";
           hostname = "raspberrypi-armv7l";
           username = "s4rch";
-          extraModules = with inputs.nixos-raspberrypi.nixosModules; [
+          extraModules = with nixos-raspberrypi.nixosModules; [
             ./hosts/armv7l.nix
             raspberry-pi-3.base
-            "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-armv7l.nix"
           ];
         }
       ];
@@ -86,25 +118,14 @@
           extraModules ? [ ],
           ...
         }:
-        nixpkgs.lib.nixosSystem (nixosBaseArgs username system hostname extraModules);
+        nixos-raspberrypi.lib.nixosSystem (nixosBaseArgs username system hostname extraModules);
 
       mkSdImage =
         {
-          system,
-          format,
           hostname,
-          username,
-          extraModules ? [ ],
           ...
         }:
-        nixos-generators.nixosGenerate {
-          inherit system format;
-          modules = (nixosBaseArgs username system hostname extraModules).modules;
-          specialArgs = {
-            inherit inputs;
-            pkgs = pkgsFor system;
-          };
-        };
+        self.nixosConfigurations.${hostname}.config.system.build.sdImage;
     in
     {
       apps = forEachBuildSystem (
@@ -153,6 +174,7 @@
     };
 
   inputs = {
+    # nixpkgs.url = "github:nvmd/nixpkgs/modules-with-keys-25.05";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     rust = {
       url = "github:oxalica/rust-overlay";
@@ -168,6 +190,11 @@
     };
     dms = {
       url = "github:AvengeMedia/DankMaterialShell?rev=7fb358bada0d3a229ec5ee6aaad0f9b64f367331"; # stable branch
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.quickshell.follows = "quickshell";
+    };
+    quickshell = {
+      url = "git+https://git.outfoxxed.me/quickshell/quickshell?rev=26531fc46ef17e9365b03770edd3fb9206fcb460";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     mango = {
