@@ -17,10 +17,7 @@
       supportedFilesystems = [ "ntfs" ];
     };
 
-    loader = {
-      timeout = pkgs.lib.mkDefault 3;
-      efi.canTouchEfiVariables = true;
-    };
+    loader.timeout = pkgs.lib.mkDefault 3;
 
     plymouth = {
       enable = true;

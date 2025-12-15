@@ -15,13 +15,12 @@
     pipewire = {
       enable = true;
       alsa.enable = true;
-      pulse.enable = true;
       wireplumber.enable = true;
     };
 
     avahi = {
       enable = true;
-      nssmdns = true;
+      nssmdns4 = true;
       publish = {
         enable = true;
         addresses = true;

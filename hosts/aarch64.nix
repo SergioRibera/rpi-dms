@@ -46,16 +46,11 @@
   #    dtparam=usb=on
   #  '';
 
-  # boot.initrd.availableKernelModules = [
-  #   "usbhid"
-  #   "usb_storage"
-  #   "xhci_pci"
-  #   "xhci_hcd"
-  #   "usbhid"
-  #   "hid_generic"
-  #   "hid_apple"
-  #   "hid_logitech"
-  # ];
+  boot.initrd.availableKernelModules = [
+    "usbhid"
+    "usb_storage"
+    "xhci_hcd"
+  ];
 
   # boot.kernelParams = [
   #   # Configuración de memoria

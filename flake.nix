@@ -78,7 +78,6 @@
             inputs.home-manager.nixosModules.home-manager
 
             trusted-nix-caches
-            nixpkgs-rpi
             usb-gadget-ethernet # Configures USB Gadget/Ethernet - Ethernet emulation over USB
 
             sd-image
@@ -95,7 +94,6 @@
           extraModules = with nixos-raspberrypi.nixosModules; [
             ./hosts/aarch64.nix
             raspberry-pi-4.base
-            raspberry-pi-4.display-vc4 # "regular" display connected
           ];
         }
         {
